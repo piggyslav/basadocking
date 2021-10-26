@@ -6,23 +6,23 @@ RUN apt-get update && \
 	apt-get dist-upgrade -y && \
 	# dependencies
 	apt-get install -y wget curl apt-transport-https ca-certificates unzip file tini git openssh-server #&& \
-#	wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg && \
-#	echo "deb https://packages.sury.org/php/ buster main" > /etc/apt/sources.list.d/php.list && \
-#	echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" > /etc/apt/sources.list.d/caddy-fury.list && \
-#	apt-get update && apt-get install -y \
-#		caddy \
-#		php7.4-cli \
-#		php7.4-fpm \
-#		php7.4-gd \
-#		php7.4-intl \
-#		php7.4-json \
-#		php7.4-mbstring \
-#		php7.4-sqlite3 \
-#		php7.4-tokenizer \
-#		php7.4-xml \
-#		php7.4-zip && \
-#	# composer
-#	curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+	wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg && \
+	echo "deb https://packages.sury.org/php/ buster main" > /etc/apt/sources.list.d/php.list && \
+	echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" > /etc/apt/sources.list.d/caddy-fury.list && \
+	apt-get update && apt-get install -y \
+		caddy \
+		php7.4-cli \
+		php7.4-fpm \
+		php7.4-gd \
+		php7.4-intl \
+		php7.4-json \
+		php7.4-mbstring \
+		php7.4-sqlite3 \
+		php7.4-tokenizer \
+		php7.4-xml \
+		php7.4-zip && \
+	# composer
+	curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # copy files
 ADD ./Caddyfile /etc/Caddyfile
@@ -83,6 +83,7 @@ RUN git remote add origin git@github.com:piggyslav/basadocking.git
 # Create new repo on github checkout and add everything
 RUN git add .
 RUN git commit -m "initial commit"
+RUN git checkout -b prod
 RUN git checkout -b dev
 RUN git push -u origin dev prod
 
