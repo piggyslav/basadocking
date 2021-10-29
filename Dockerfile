@@ -28,6 +28,9 @@ RUN apt-get update && \
 # install composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
+# install npm
+RUN curl -qL https://www.npmjs.com/install.sh | sh
+
 # copy files
 ADD ./Caddyfile /etc/Caddyfile
 ADD ./php.ini /etc/php/7.4/conf.d/999-php.ini

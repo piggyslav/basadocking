@@ -29,19 +29,29 @@ if [ ! -f "/srv/www/index.php" ]; then
   # composer run
   composer update --no-progress
 
+  # npm install run
+  npm install
+
+  # run gulp to create dist folder
+  gulp
+
   # Folders and permissions
   chmod 0666 /srv/app/config/config.neon
   chmod 0666 /srv/www/upload
+  chmod 0666 /srv/www/dist
+
   mkdir /srv/temp /srv/log
   chmod 0777 /srv/log
   chmod 0777 /srv/temp
+
   chown -R admin:root /srv
 fi
 cd /
 echo "Project ready starting..."
 
+service ssh start
+service ssh status
+
 /usr/sbin/php-fpm7.4 -F -R -y /etc/php/7.4/php-fpm.conf &
 caddy run -config /etc/Caddyfile &
 wait -n
-service ssh start
-service ssh status
