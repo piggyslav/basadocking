@@ -13,6 +13,9 @@ log
 # Set the path to the php-fpm process.
 php_fastcgi unix//var/run/php-fpm.sock
 
+# fileserver
+file_server browse
+
 # Global options
 {
   # Disable admin

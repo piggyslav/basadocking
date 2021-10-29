@@ -1,11 +1,13 @@
 FROM debian:buster
 WORKDIR /
 
+ARG PROJECT_NAME
+ENV PROJECT_NAME=$PROJECT_NAME
+
 # Initial setup
 RUN apt-get update && \
 	apt-get dist-upgrade -y && \
-	# dependencies
-	apt-get install -y wget curl apt-transport-https ca-certificates unzip file tini git openssh-server #&& \
+	apt-get install -y wget curl apt-transport-https ca-certificates unzip file tini git openssh-server && \
 	wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg && \
 	echo "deb https://packages.sury.org/php/ buster main" > /etc/apt/sources.list.d/php.list && \
 	echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" > /etc/apt/sources.list.d/caddy-fury.list && \
@@ -17,12 +19,14 @@ RUN apt-get update && \
 		php7.4-intl \
 		php7.4-json \
 		php7.4-mbstring \
-		php7.4-sqlite3 \
+		php7.4-mysql \
+		php7.4-pdo \
 		php7.4-tokenizer \
 		php7.4-xml \
-		php7.4-zip && \
-	# composer
-	curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+		php7.4-zip
+
+# install composer
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 # copy files
 ADD ./Caddyfile /etc/Caddyfile
@@ -54,6 +58,8 @@ RUN cat /keys/authorized_keys >> /home/admin/.ssh/authorized_keys
 RUN cat /keys/config >> /home/admin/.ssh/config
 
 USER root
+
+RUN chmod 600 /home/admin/.ssh/id_rsa
 # Create known_hosts
 RUN mkdir /root/.ssh/&& \
     chmod 0700 /root/.ssh
@@ -65,30 +71,7 @@ RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 RUN sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 
-#RUN service ssh start
-#RUN ssh-add /home/admin/.ssh/id_rsa
-
-WORKDIR /srv
-
-# Clone the conf files into the docker container
-RUN git clone --config core.sshCommand="ssh -i /home/admin/.ssh/id_rsa" git@github.com:piggyslav/basa.git .
-RUN rm -rf /srv/.git
-RUN git config --global user.email "docker@basa.com"
-RUN git config --global user.name "Docking Basa"
-
-# Create new repo on github
-RUN curl -u piggyslav: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 https://api.github.com/user/repos -d '{"name":"basadocking", "description": "Basa dockerfile project", "private": true}'
-RUN git init
-RUN git remote add origin git@github.com:piggyslav/basadocking.git
-# Create new repo on github checkout and add everything
-RUN git add .
-RUN git commit -m "initial commit"
-RUN git checkout -b prod
-RUN git checkout -b dev
-RUN git push -u origin dev prod
-
-# Folder permissions
-#RUN chmod 0777 /srv/log
-WORKDIR /
+EXPOSE 80
+EXPOSE 22
 RUN chmod +x entrypoint.sh
-#ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
